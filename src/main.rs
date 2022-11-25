@@ -1,12 +1,16 @@
-use std::io::Write;
-use std::net::{TcpListener, TcpStream};
+use std::net::TcpListener;
 use std::thread;
 
+mod client;
 mod fptResultCodes;
 mod ftpCommand;
-mod client;
+mod helpers;
 
-use fptResultCodes::ResultCode;
+#[macro_use]
+extern crate cfg_if;
+
+extern  crate time;
+
 use client::handle_client;
 
 fn main() {

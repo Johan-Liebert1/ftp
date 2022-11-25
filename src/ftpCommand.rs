@@ -9,7 +9,13 @@ pub enum FTPCommand {
     Syst,
     NoOp,
     Pwd,
+    Type,
+    Pasv,
+    CdUp,
+    List(PathBuf),
     Cwd(PathBuf),
+    Mkd(PathBuf),
+    Rmd(PathBuf),
     User(String),
     Unknown(String),
 }
@@ -25,6 +31,12 @@ fn to_uppercase(data: &mut [u8]) {
 impl AsRef<str> for FTPCommand {
     fn as_ref(&self) -> &str {
         match &*self {
+            FTPCommand::CdUp => "CDUP",
+            FTPCommand::List(_) => "LIST",
+            FTPCommand::Mkd(_) => "MKD",
+            FTPCommand::Rmd(_) => "RMD",
+            FTPCommand::Pasv => "PASV",
+            FTPCommand::Type => "TYPE",
             FTPCommand::Auth => "AUTH",
             FTPCommand::Pwd => "PWD",
             FTPCommand::NoOp => "NOOP",
@@ -46,10 +58,34 @@ impl FTPCommand {
         let data = iter.next();
 
         let command = match command.as_slice() {
+            b"RMD" => FTPCommand::Rmd(
+                data.map(|bytes| Path::new(str::from_utf8(bytes).unwrap()).to_path_buf())
+                    .unwrap(),
+            ),
+
+            b"MDK" => FTPCommand::Mkd(
+                data.map(|bytes| Path::new(str::from_utf8(bytes).unwrap()).to_path_buf())
+                    .unwrap(),
+            ),
+
+            b"CDUP" => FTPCommand::CdUp,
+
+            b"TYPE" => FTPCommand::Type,
+
             b"PWD" => FTPCommand::Pwd,
+
             b"NOOP" => FTPCommand::NoOp,
+
             b"AUTH" => FTPCommand::Auth,
+
             b"SYST" => FTPCommand::Syst,
+
+            b"PASV" => FTPCommand::Pasv,
+
+            b"LIST" => FTPCommand::List(
+                data.map(|bytes| Path::new(str::from_utf8(bytes).unwrap()).to_path_buf())
+                    .unwrap(),
+            ),
 
             b"USER" => FTPCommand::User(
                 data.map(|bytes| {
