@@ -1,4 +1,4 @@
-use std::{fs::Metadata, io::Write, net::TcpStream, path::PathBuf, collections::HashMap};
+use std::{collections::HashMap, fs::Metadata, io::Write, net::TcpStream, path::PathBuf};
 
 cfg_if! {
     if #[cfg(windows)] {
@@ -14,13 +14,25 @@ cfg_if! {
     }
 }
 
-
 pub fn send_data(stream: &mut TcpStream, s: &str) {
     write!(stream, "{}", s).unwrap();
 }
 
 pub fn add_file_info(path: PathBuf, out: &mut String) {
-    let MONTHS: HashMap<usize, &str> = HashMap::from([]);
+    let months: HashMap<usize, &str> = HashMap::from([
+        (1, "January"),
+        (2, "February"),
+        (3, "March"),
+        (4, "April"),
+        (5, "May"),
+        (6, "June"),
+        (7, "July"),
+        (8, "August"),
+        (9, "September"),
+        (10, "October"),
+        (11, "November"),
+        (12, "December"),
+    ]);
 
     let extra = if path.is_dir() { "/" } else { "" };
     let is_dir = if path.is_dir() { "d" } else { "-" };
@@ -49,7 +61,7 @@ pub fn add_file_info(path: PathBuf, out: &mut String) {
         owner = "anonymous", // owner name
         group = "anonymous", // group name
         size = file_size,
-        month = MONTHS[&(time.tm_mon as usize)],
+        month = months[&(time.tm_mon as usize)],
         day = time.tm_mday,
         hour = time.tm_hour,
         min = time.tm_min,

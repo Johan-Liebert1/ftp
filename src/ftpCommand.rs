@@ -83,8 +83,14 @@ impl FTPCommand {
             b"PASV" => FTPCommand::Pasv,
 
             b"LIST" => FTPCommand::List(
-                data.map(|bytes| Path::new(str::from_utf8(bytes).unwrap()).to_path_buf())
-                    .unwrap(),
+                data.map(|bytes| {
+                    Path::new(match str::from_utf8(bytes) {
+                        Ok(thing) => thing,
+                        Err(_) => "",
+                    })
+                    .to_path_buf()
+                })
+                .unwrap_or_else(|| Path::new("/").to_path_buf()),
             ),
 
             b"USER" => FTPCommand::User(

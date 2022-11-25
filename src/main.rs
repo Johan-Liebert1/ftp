@@ -14,8 +14,9 @@ extern  crate time;
 use client::handle_client;
 
 fn main() {
-    let listener = TcpListener::bind("0.0.0.0:1234").expect("Couldn't bind this address...");
+    let listener = TcpListener::bind("127.0.0.1:1234").expect("Couldn't bind this address...");
 
+    println!("Server running at {}", listener.local_addr().unwrap());
     println!("Waiting for clients to connect...");
 
     for stream in &mut listener.incoming() {
