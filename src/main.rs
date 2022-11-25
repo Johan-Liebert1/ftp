@@ -4,28 +4,10 @@ use std::thread;
 
 mod fptResultCodes;
 mod ftpCommand;
+mod client;
 
 use fptResultCodes::ResultCode;
-
-fn send_cmd(stream: &mut TcpStream, code: ResultCode, message: &str) {
-    let msg = if message.is_empty() {
-        let code = ResultCode::CommandNotImplemented;
-        format!("{}\r\n", code as u32)
-    } else {
-        format!("{} {}\r\n", code as u32, message)
-    };
-
-    println!("<==== {}", msg);
-
-    write!(stream, "{}", msg).unwrap()
-}
-
-fn handle_client(stream: &mut TcpStream) {
-    println!("New client!");
-    if let Err(_) = stream.write(b"hello") {
-        println!("Failed to send hello... :'(");
-    }
-}
+use client::handle_client;
 
 fn main() {
     let listener = TcpListener::bind("0.0.0.0:1234").expect("Couldn't bind this address...");
@@ -34,9 +16,9 @@ fn main() {
 
     for stream in &mut listener.incoming() {
         match stream {
-            Ok(mut stream) => {
+            Ok(stream) => {
                 thread::spawn(move || {
-                    handle_client(&mut stream);
+                    handle_client(stream);
                 });
             }
 
